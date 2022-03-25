@@ -456,7 +456,7 @@ def _toString(_value: uint256) -> String[20]:
     position: uint256 = 19
 
     part:String[100] = concat(slice(result, 0, position), '1')
-    result =  slice(part, 0,  20)
+    result =  slice(slice(part, 0,  position), 0, 20)
     return result
     # for i in range(20):
     #     digit: uint256 = temp % 10
@@ -490,7 +490,6 @@ def tokenURI(_tokenId: uint256) -> String[321]:
     @dev Returns token collection name.
     """
     extension: String[5] = ".json"
-    # return concat(self.baseURI, self._toString(_tokenId), extension)
     return concat(self.baseURI, self._toString(_tokenId), extension)
 
 

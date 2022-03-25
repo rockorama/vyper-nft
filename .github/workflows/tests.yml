@@ -37,7 +37,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          touch .env
           python -m pip install --upgrade pip
           python -m venv venv
           source venv/bin/activate
@@ -48,9 +47,6 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           brownie test -n auto --coverage
-        env:
-          WEB3_INFURA_PROJECT_ID: ${{ secrets.WEB3_INFURA_PROJECT_ID }}
-          ETHERSCAN_TOKEN: ${{ secrets.ETHERSCAN_TOKEN }}
 
       - name: Upload Coverage Report to Codecov
         if: always()
