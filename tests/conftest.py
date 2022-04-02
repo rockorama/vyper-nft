@@ -34,7 +34,7 @@ def alice(accounts):
 
 @pytest.fixture
 def nft(NFT, owner):
-    nft_contract = owner.deploy(NFT, "My First NFT", "NFT", "https://google.com/")
+    nft_contract = owner.deploy(NFT, "My First NFT", "NFT", "https://mynft.com/")
     assert nft_contract.name() == "My First NFT"
     assert nft_contract.symbol() == "NFT"
     yield nft_contract

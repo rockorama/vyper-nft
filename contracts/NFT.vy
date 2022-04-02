@@ -122,8 +122,7 @@ ERC721_INTERFACE_ID: constant(bytes32) = 0x0000000000000000000000000000000000000
 ERC721_METADATA_INTERFACE_ID: constant(bytes32) = 0x000000000000000000000000000000000000000000000000000000000000139f
 
 # @dev Private toStrig buffer
-NUMBER_SYMBOLS: constant(String[10]) = "0123456789"
-
+IDENTITY_PRECOMPILE: constant(address) = 0x0000000000000000000000000000000000000004
 
 ######################
 # CONSTRUCTOR
@@ -434,58 +433,40 @@ def symbol() -> String[4]:
     """
     return self._symbol
 
-@view
+
+@pure
 @internal
-def _toString(_value: uint256) -> String[20]:
+def _toString(_value: uint256) -> String[78]:
+    # Taken from Curve: https://github.com/curvefi/curve-veBoost/blob/0e51be10638df2479d9e341c07fafa940ef58596/contracts/VotingEscrowDelegation.vy#L423
+    # NOTE: Odd that this works with a raw_call inside, despite being marked
+    # a pure function
     if _value == 0:
         return "0"
-    
-    temp: uint256 = _value
-    digits: uint256 = 0
 
-    # figure out the length of the string
-    for i in range(20): 
-        digits += 1
-        temp /= 10
-        if temp == 0:
-            break
-    
-    
-    result: String[20] = "00000000000000000000"
-    temp = _value
-    position: uint256 = 19
+    buffer: Bytes[78] = b""
+    digits: uint256 = 78
 
-    part:String[100] = concat(slice(result, 0, position), '1')
-    result =  slice(slice(part, 0,  position), 0, 20)
-    return result
-    # for i in range(20):
-    #     digit: uint256 = temp % 10
-    #     character: String[1] = slice(NUMBER_SYMBOLS, digit, 1)
+    for i in range(78):
+        # go forward to find the # of digits, and set it
+        # only if we have found the last index
+        if digits == 78 and _value / 10 ** i == 0:
+            digits = i
 
-    #     # result = concat(, digit)
+        value: uint256 = ((_value / 10 ** (77 - i)) % 10) + 48
+        char: Bytes[1] = slice(convert(value, bytes32), 31, 1)
+        buffer = raw_call(
+            IDENTITY_PRECOMPILE,
+            concat(buffer, char),
+            max_outsize=78,
+            is_static_call=True
+        )
 
-    #     temp /= 10
-    #     if temp == 0:
-    #         break
-    #     position -= 1
+    return convert(slice(buffer, 78 - digits, digits), String[78])
 
-    
-    # for i in range(20):
-    #     if position == 20:
-    #         break
-    #     character: String[1] = slice(NUMBER_SYMBOLS, computed[position], 1)
-        
-    #     position += 1
-    #     # previous: String[20] = slice(concat(slice(result, 0, len(result)), character)
-        
-
-
-
-    # return result
 
 @view
 @external
-def tokenURI(_tokenId: uint256) -> String[321]:
+def tokenURI(_tokenId: uint256) -> String[350]:
     """
     @dev Returns token collection name.
     """
